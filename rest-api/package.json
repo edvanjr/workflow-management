@@ -1,0 +1,17 @@
+{
+  "name": "workflow",
+  "version": "1.0.0",
+  "description": "Workflow Management System",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Edvan Soares",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cors": "^2.8.4",
+    "express": "^4.15.4",
+    "validator": "^8.0.0"
+  }
+}
