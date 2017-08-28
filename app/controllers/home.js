@@ -4,11 +4,23 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 	$scope.inputs = [];
 	$scope.sensitiveOutputsTemp = [];
 	$scope.sensitiveOutputs = [];
+	$scope.workflow = "";
+
+	function isNumeric(n) {
+  		return !isNaN(parseFloat(n)) && isFinite(n);
+	}
 
 	$scope.loadAnalysis = function() {
 		if (!$scope.cwl) {
 			alert("Choose a CWL file!")
 			return;
+		}
+
+		for (var i = $scope.inputs.length - 1; i >= 0; i--) {
+			if($scope.inputs[i]['isSensitive'] && !isNumeric($scope.inputs[i]['anonymityDegree'])) {
+				alert("Set anonymity degree for '" + $scope.inputs[i]['input'] + "' input");
+				return;
+			}
 		}
 
 		$scope.dependencies = [];
@@ -33,7 +45,7 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 		reader.readAsText($scope.cwl);
 	}
 
-	$scope.loadInputs = function() {
+	$scope.loadWorkflow = function() {
 		if (!$scope.cwl) {
 			alert("Choose a CWL file!")
 			return;
@@ -44,6 +56,7 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 		$scope.sensitiveOutputs = [];
 		var reader = new FileReader();
 		reader.onload = function() {
+			$scope.workflow = reader.result;
 			var workflow = YAML.parse(reader.result);
 			workflowAPI.inputs(workflow).then(
 				function successCallback(response){
@@ -67,8 +80,10 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 
 		for(var i = 0; i < sensitiveInputs.length; i++) {
 			for(var j = 0; j < $scope.dependencies.length; j++) {
-				if(sensitiveInputs[i]['input'] == $scope.dependencies[j]['input'].replace('this.inputs.', '')) {
-					$scope.sensitiveOutputsTemp.push($scope.dependencies[j]);
+				for(var k = 0; k < $scope.dependencies[j]['inputs'].length; k++) {
+					if(sensitiveInputs[i]['input'] == $scope.dependencies[j]['inputs'][k].replace('this.inputs.', '')) {
+						$scope.sensitiveOutputsTemp.push($scope.dependencies[j]);
+					}
 				}
 			}
 		}
@@ -87,13 +102,24 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 		distinctSensitiveOutputs = distinctSensitiveOutputs.filter(function(v,i) { return distinctSensitiveOutputs.indexOf(v) == i; });
 
 		for (var i = distinctSensitiveOutputs.length - 1; i >= 0; i--) {
-			var count = $scope.sensitiveOutputsTemp.filter(function(output) {
-				if(output['output'] === distinctSensitiveOutputs[i]) {
-					return output;
-				}
-			}).length
+			var output = $scope.dependencies.find(function(obj) {
+				return obj['output'] === distinctSensitiveOutputs[i];
+			});
 
-			$scope.sensitiveOutputs.push({'output':distinctSensitiveOutputs[i], 'anonymityDegree':count});
+			var aD = 0;
+			for (var j = 0; j < output['inputs'].length; j++) {
+				var input = sensitiveInputs.find(function(obj) {
+					return obj['input'] === output['inputs'][j].replace('this.inputs.', '');
+				});
+
+				if(input) {
+					if(parseInt(input['anonymityDegree']) > aD) {
+						aD = parseInt(input['anonymityDegree']);
+					}
+				}
+			}
+
+			$scope.sensitiveOutputs.push({'output':distinctSensitiveOutputs[i], 'anonymityDegree':aD});
 		}
 	}
 })

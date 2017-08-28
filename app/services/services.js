@@ -1,4 +1,5 @@
-var url = 'https://frozen-escarpment-48755.herokuapp.com/';
+//var url = 'https://frozen-escarpment-48755.herokuapp.com/';
+var url = 'http://localhost:5000/';
 
 app.factory('workflowAPI', function($http){
 

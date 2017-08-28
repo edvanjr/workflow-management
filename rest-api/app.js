@@ -31,8 +31,16 @@ app.post('/dependencies', function(req, res) {
 
 			Object.keys(workflow['inputs']).forEach(function(k, i) {
 				var stepIn = step['in'];
+				var output = dependencies.find(function(obj) {
+					return obj['output'] === 'this.outputs.' + key;
+				})
+				console.log(output)
 				if(stepIn[k]) {
-					dependencies.push({'output': 'this.outputs.' + key, 'input': 'this.inputs.' + k})
+					if(output) {
+						output['inputs'].push('this.inputs.' + k)
+					} else {
+						dependencies.push({'output': 'this.outputs.' + key, 'inputs': ['this.inputs.' + k]})
+					}
 				}
 			});
 		}
