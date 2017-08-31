@@ -5,6 +5,8 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 	$scope.sensitiveOutputsTemp = [];
 	$scope.sensitiveOutputs = [];
 	$scope.workflow = "";
+	$scope.timeSpentSensitiveOutputs = 0;
+	$scope.timeSpentAnonymityDegree = 0;
 
 	function isNumeric(n) {
   		return !isNaN(parseFloat(n)) && isFinite(n);
@@ -73,24 +75,28 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 	}
 
 	$scope.loadSensitiveOutputs = function() {
+		var start = new Date().getTime();
 		var sensitiveInputs = $scope.inputs.filter(function(obj) {
 			if(obj['isSensitive']) 
 				return obj;
 		});
 
 		for(var i = 0; i < sensitiveInputs.length; i++) {
-			for(var j = 0; j < $scope.dependencies.length; j++) {
-				for(var k = 0; k < $scope.dependencies[j]['inputs'].length; k++) {
-					if(sensitiveInputs[i]['input'] == $scope.dependencies[j]['inputs'][k].replace('this.inputs.', '')) {
-						$scope.sensitiveOutputsTemp.push($scope.dependencies[j]);
+			for(var j = 0; j < $scope.dependencies['dependencies'].length; j++) {
+				for(var k = 0; k < $scope.dependencies['dependencies'][j]['inputs'].length; k++) {
+					if(sensitiveInputs[i]['input'] == $scope.dependencies['dependencies'][j]['inputs'][k].replace('this.inputs.', '')) {
+						$scope.sensitiveOutputsTemp.push($scope.dependencies['dependencies'][j]);
 					}
 				}
 			}
 		}
+
+		var finish = new Date().getTime();
+		$scope.timeSpentSensitiveOutputs = finish-start;
 	}
 
 	$scope.anonymityDegree = function() {
-
+		var start = new Date().getTime();
 		var sensitiveInputs = $scope.inputs.filter(function(input) {
 			if(input['isSensitive']) {
 				var a = input['input'];
@@ -102,7 +108,7 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 		distinctSensitiveOutputs = distinctSensitiveOutputs.filter(function(v,i) { return distinctSensitiveOutputs.indexOf(v) == i; });
 
 		for (var i = distinctSensitiveOutputs.length - 1; i >= 0; i--) {
-			var output = $scope.dependencies.find(function(obj) {
+			var output = $scope.dependencies['dependencies'].find(function(obj) {
 				return obj['output'] === distinctSensitiveOutputs[i];
 			});
 
@@ -121,5 +127,8 @@ app.controller('HomeCtrl', function($rootScope, $scope, $http, $location, workfl
 
 			$scope.sensitiveOutputs.push({'output':distinctSensitiveOutputs[i], 'anonymityDegree':aD});
 		}
+
+		var finish = new Date().getTime();
+		$scope.timeSpentAnonymityDegree = finish-start;
 	}
 })

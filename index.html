@@ -67,11 +67,14 @@
 							<th colspan="2" class="text-center">Depends On</th>
 						</thead>
 						<tbody>
-							<tr ng-repeat="d in dependencies">
+							<tr ng-repeat="d in dependencies.dependencies">
 								<td>{{d.output}}</td>
 								<td>{{d.inputs.join(', ')}}</td>
 							</tr>
 						</tbody>
+						<tfoot ng-if="dependencies.timeSpent != undefined">
+							<td colspan="2" class="text-center" style="font-size: 10px; color: blue;">{{dependencies.timeSpent}} milliseconds were spent executing this operation</td>
+						</tfoot>
 					</table>
 				</div>
 			</div>
@@ -89,6 +92,10 @@
 								<td>{{s.anonymityDegree}}</td>
 							</tr>
 						</tbody>
+						<tfoot ng-if="sensitiveOutputs.length > 0">
+							<td class="text-center" style="font-size: 10px; color: blue;">{{timeSpentSensitiveOutputs}} milliseconds were spent executing this operation</td>
+							<td class="text-center" style="font-size: 10px; color: blue;">{{timeSpentAnonymityDegree}} milliseconds were spent executing this operation</td>
+						</tfoot>
 					</table>
 				</div>
 			</div>

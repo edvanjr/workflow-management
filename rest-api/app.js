@@ -21,6 +21,8 @@ app.post('/inputs', function(req, res) {
 });
 
 app.post('/dependencies', function(req, res) {
+	var start = new Date().getTime();
+	console.log(start)
 	var workflow = req.body;
 	var dependencies = [];
 	Object.keys(workflow['outputs']).forEach(function(key,index) {
@@ -34,7 +36,7 @@ app.post('/dependencies', function(req, res) {
 				var output = dependencies.find(function(obj) {
 					return obj['output'] === 'this.outputs.' + key;
 				})
-				console.log(output)
+
 				if(stepIn[k]) {
 					if(output) {
 						output['inputs'].push('this.inputs.' + k)
@@ -45,7 +47,12 @@ app.post('/dependencies', function(req, res) {
 			});
 		}
 	});
-	res.json(dependencies);
+
+	var finish = new Date().getTime();
+	console.log(finish)
+	var result = {'dependencies':dependencies, 'timeSpent':finish-start}
+	console.log(finish-start)
+	res.json(result);
 });
 
 app.post('/sensitive-outputs', function(req, res) {
